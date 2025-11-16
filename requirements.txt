@@ -1,0 +1,13 @@
+Flask
+Flask-WTF
+Flask-Caching
+Flask-Babel
+bcrypt
+pywin32
+psutil
+pyautogui
+pyperclip
+Pillow
+screeninfo
+mss
+requests

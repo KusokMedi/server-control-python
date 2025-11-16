@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>{% block title %}WebControl{% endblock %}</title>
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark');
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="{% if session.get('theme') == 'dark' %}dark{% endif %}">
+    <header>
+        <nav class="top-nav" role="navigation" aria-label="Основное меню">
+            <div class="nav-container">
+                <a href="/" aria-label="Главная страница" class="nav-title-link">
+                    <img src="{{ url_for('static', filename='images/logo.gif') }}" alt="Logo" class="nav-logo">
+                    <h1 class="nav-title">WebControl</h1>
+                </a>
+                <button class="hamburger" onclick="toggleMenu()" aria-label="Открыть меню" aria-expanded="false">
+                    <span class="hamburger-icon"></span>
+                </button>
+                <ul class="nav-menu" id="nav-menu" role="menubar">
+                    {% if session.get('logged_in') %}
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'processes')" id="nav-processes" tabindex="0" role="menuitem"><i class="fas fa-cogs"></i> Процессы</a></li>
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'monitoring')" id="nav-monitoring" tabindex="0" role="menuitem"><i class="fas fa-chart-line"></i> Мониторинг</a></li>
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'windows')" id="nav-windows" tabindex="0" role="menuitem"><i class="fas fa-window-maximize"></i> Окна</a></li>
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'input')" id="nav-input" tabindex="0" role="menuitem"><i class="fas fa-keyboard"></i> Клавиатура / Мышь</a></li>
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'screenshots')" id="nav-screenshots" tabindex="0" role="menuitem"><i class="fas fa-camera"></i> Скриншот</a></li>
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'clipboard')" id="nav-clipboard" tabindex="0" role="menuitem"><i class="fas fa-clipboard"></i> Буфер обмена</a></li>
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'logs')" id="nav-logs" tabindex="0" role="menuitem"><i class="fas fa-file-alt"></i> Логи</a></li>
+                        <li role="none" class="menu-spacer"></li>
+                        <li role="none" class="menu-bottom-row">
+                            <button onclick="toggleTheme()" aria-label="Переключить тему" tabindex="0" role="menuitem"><i class="fas fa-moon"></i> Тема</button>
+                            <a href="{{ url_for('logout') }}" tabindex="0" role="menuitem"><i class="fas fa-sign-out-alt"></i> Выход</a>
+                        </li>
+                    {% else %}
+                        <li role="none"><a href="{{ url_for('login') }}" tabindex="0" role="menuitem"><i class="fas fa-sign-in-alt"></i> Вход</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <main class="content" id="content">
+        {% block content %}{% endblock %}
+    </main>
+    <button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()" aria-label="Вверх">↑</button>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

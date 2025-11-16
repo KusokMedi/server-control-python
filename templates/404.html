@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}404 - WebControl{% endblock %}
+
+{% block head %}
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--bg);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    .error-container {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px var(--card-shadow);
+        max-width: 500px;
+        width: 100%;
+        color: var(--text);
+    }
+    .error-container h1 {
+        font-size: 6em;
+        margin: 0;
+        color: #ccc;
+    }
+    .error-container h2 {
+        color: var(--text);
+        margin-bottom: 20px;
+    }
+    .error-container p {
+        color: #666;
+        margin-bottom: 30px;
+    }
+    .error-container button {
+        padding: 12px 24px;
+        background: var(--nav-bg);
+        color: var(--nav-text);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .error-container button:hover {
+        background: #777;
+        transform: scale(1.05);
+    }
+    @media (max-width: 768px) {
+        .error-container {
+            padding: 20px;
+            max-width: 90%;
+        }
+        .error-container h1 {
+            font-size: 4em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Страница не найдена</h2>
+        <p>Извините, но запрашиваемая страница не существует.</p>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <button onclick="window.location.href='/'" aria-label="Вернуться на главную">Вернуться на главное меню</button>
+    </div>
+{% endblock %}
