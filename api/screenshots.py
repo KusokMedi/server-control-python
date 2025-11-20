@@ -5,6 +5,7 @@ from screeninfo import get_monitors
 from PIL import Image, ImageDraw
 import mss
 import logging
+from utils.logger import log_action
 
 logger = logging.getLogger(__name__)
 screenshots_bp = Blueprint('screenshots', __name__)
@@ -130,6 +131,7 @@ def api_get_monitors():
     try:
         monitors = get_monitors_list()
         logger.info(f"Retrieved {len(monitors)} monitors")
+        log_action(f"Retrieved {len(monitors)} monitors")
         return jsonify(monitors)
     except Exception as e:
         logger.error(f"Error getting monitors: {e}")
@@ -161,6 +163,7 @@ def api_take_screenshot():
 
         img_paths = capture_screenshot(mode, monitor_id, show_cursor, cursor_style)
         logger.info(f"Screenshot taken in mode {mode}, paths: {img_paths}")
+        log_action(f"Screenshot taken in mode {mode}, saved to {img_paths}")
         return jsonify({'message': 'Screenshots saved successfully', 'paths': img_paths})
 
     except Exception as e:

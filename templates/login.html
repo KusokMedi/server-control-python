@@ -72,12 +72,18 @@
     }
 
     @media (max-width: 480px) {
+        body {
+            padding: 10px;
+        }
         .login-container {
-            padding: 20px;
-            max-width: 90%;
+            padding: 15px;
+            max-width: 100%;
         }
         .login-container h2 {
-            font-size: 1.5em;
+            font-size: 1.2em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .login-container input, .login-container button {
             font-size: 0.9em;

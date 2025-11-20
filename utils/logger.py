@@ -6,11 +6,11 @@ os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 
 # Создаем отдельный logger для действий
 actions_logger = logging.getLogger('actions')
-actions_logger.setLevel(logging.INFO)
+actions_logger.setLevel(logging.DEBUG)
 
 # Создаем handler для файла
 file_handler = logging.FileHandler(LOG_FILE)
-file_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 

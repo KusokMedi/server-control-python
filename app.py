@@ -2,7 +2,7 @@ import os
 import logging
 
 # Настройка логирования
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 from flask import Flask, render_template, Blueprint, request, redirect, url_for, session, jsonify
 from flask_wtf.csrf import CSRFProtect
@@ -51,7 +51,9 @@ app.register_blueprint(logs_bp, url_prefix='/api')
 @app.route('/')
 def index():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to index page")
         return redirect(url_for('login'))
+    log_action("User accessed index page")
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -75,51 +77,67 @@ def logout():
 @app.route('/processes')
 def processes():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to processes page")
         return redirect(url_for('login'))
+    log_action("User accessed processes page")
     return render_template('index.html')
 
 @app.route('/monitoring')
 def monitoring():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to monitoring page")
         return redirect(url_for('login'))
+    log_action("User accessed monitoring page")
     return render_template('index.html')
 
 @app.route('/windows')
 def windows():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to windows page")
         return redirect(url_for('login'))
+    log_action("User accessed windows page")
     return render_template('index.html')
 
 @app.route('/input')
 def input_page():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to input page")
         return redirect(url_for('login'))
+    log_action("User accessed input page")
     return render_template('index.html')
 
 @app.route('/screenshots')
 def screenshots():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to screenshots page")
         return redirect(url_for('login'))
+    log_action("User accessed screenshots page")
     return render_template('index.html')
 
 @app.route('/clipboard')
 def clipboard():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to clipboard page")
         return redirect(url_for('login'))
+    log_action("User accessed clipboard page")
     return render_template('index.html')
 
 @app.route('/logs')
 def logs():
     if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to logs page")
         return redirect(url_for('login'))
+    log_action("User accessed logs page")
     return render_template('index.html')
 
 @app.errorhandler(404)
 def page_not_found(e):
+    log_action(f"404 error: {request.url}")
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
 def internal_error(e):
+    log_action(f"500 internal server error: {e}")
     logger.error(f"Internal server error: {e}")
     return render_template('404.html', error='Внутренняя ошибка сервера'), 500
 

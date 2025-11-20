@@ -41,7 +41,10 @@
                             <a href="{{ url_for('logout') }}" tabindex="0" role="menuitem"><i class="fas fa-sign-out-alt"></i> Выход</a>
                         </li>
                     {% else %}
-                        <li role="none"><a href="{{ url_for('login') }}" tabindex="0" role="menuitem"><i class="fas fa-sign-in-alt"></i> Вход</a></li>
+                        <li role="none" class="menu-bottom-row">
+                            <button onclick="toggleTheme()" aria-label="Переключить тему" tabindex="0" role="menuitem"><i class="fas fa-moon"></i> Тема</button>
+                            <a href="{{ url_for('login') }}" tabindex="0" role="menuitem"><i class="fas fa-sign-in-alt"></i> Вход</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>

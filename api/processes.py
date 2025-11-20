@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import psutil
 import logging
+from utils.logger import log_action
 
 logger = logging.getLogger(__name__)
 processes_bp = Blueprint('processes', __name__)
@@ -21,6 +22,7 @@ def list_processes():
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         logger.info(f"Listed {len(processes)} processes")
+        log_action(f"Listed {len(processes)} processes")
         return jsonify(processes)
     except Exception as e:
         logger.error(f"Error listing processes: {e}")
@@ -36,6 +38,7 @@ def kill_process():
         proc = psutil.Process(pid)
         proc.kill()
         logger.info(f"Process {pid} killed")
+        log_action(f"Process {pid} ({proc.name()}) killed")
         return jsonify({'success': True})
     except ValueError:
         return jsonify({'error': 'Invalid pid'}), 400
@@ -56,6 +59,7 @@ def set_priority():
         proc = psutil.Process(pid)
         proc.nice(priority)
         logger.info(f"Process {pid} priority set to {priority}")
+        log_action(f"Process {pid} ({proc.name()}) priority set to {priority}")
         return jsonify({'success': True})
     except ValueError:
         return jsonify({'error': 'Invalid pid or priority'}), 400
