@@ -152,7 +152,7 @@ By default, the server starts on localhost:5000. To change the port or host, edi
 - Click "Take Screenshot" to capture the screen
 - Images are saved in static/screenshots/
 
-## API
+## API 🔌
 
 WebControl provides a REST API for programmatic access:
 
@@ -189,14 +189,14 @@ http://localhost:5000/api/
 
 All requests require authentication via the Authorization header.
 
-## Security
+## Security 🔒
 
 - All communications occur via HTTP (use HTTPS for production)
 - Password-based authentication
 - Logging of all actions for audit
 - Recommended to run on local network or with VPN
 
-## Development
+## Development 💻
 
 ### Code Structure
 - Follow modular architecture
@@ -212,18 +212,18 @@ All requests require authentication via the Authorization header.
 - Run `python run.py` for local testing
 - Check all modules through the web interface
 
-## License
+## License 📄
 
 The project is distributed under the MIT license. See the LICENSE file for details.
 
-## Support
+## Support ❓
 
 If you encounter issues or have questions:
 - Check logs in the logs/ folder
 - Ensure all dependencies are installed
 - Check firewall settings
 
-## Changelog
+## Changelog 📈
 
 ### v1.0.0
 - First stable version
