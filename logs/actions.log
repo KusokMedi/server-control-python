@@ -1,13 +1,4 @@
-2025-11-20 18:22:51,176 - INFO - Logs cleared by admin
-2025-11-20 18:23:23,303 - WARNING -  * Debugger is active!
-2025-11-20 18:23:23,321 - INFO -  * Debugger PIN: 135-648-618
-2025-11-20 18:23:42,959 - INFO - Listed 7 windows
-2025-11-20 18:23:42,969 - INFO - 127.0.0.1 - - [20/Nov/2025 18:23:42] "GET /api/windows HTTP/1.1" 200 -
-2025-11-20 18:23:57,835 - INFO - Listed 175 processes
-2025-11-20 18:23:57,836 - INFO - Listed 175 processes
-2025-11-20 18:23:57,839 - INFO - 127.0.0.1 - - [20/Nov/2025 18:23:57] "GET /api/processes HTTP/1.1" 200 -
-2025-11-20 18:24:01,768 - INFO - Logs retrieved, search: '', level: '', limit: 15, offset: 0, returned: 8, total: 8
-2025-11-20 18:24:01,769 - INFO - 127.0.0.1 - - [20/Nov/2025 18:24:01] "GET /api/logs?limit=15&offset=0&search=&level= HTTP/1.1" 200 -
-2025-11-20 18:24:24,955 - INFO - Listed 177 processes
-2025-11-20 18:24:24,957 - INFO - Listed 177 processes
-2025-11-20 18:24:24,959 - INFO - 127.0.0.1 - - [20/Nov/2025 18:24:24] "GET /api/processes HTTP/1.1" 200 -
+2025-11-20 18:25:03,295 - INFO - Logs cleared by admin
+2025-11-20 18:25:03,296 - INFO - 127.0.0.1 - - [20/Nov/2025 18:25:03] "POST /api/logs/clear HTTP/1.1" 200 -
+2025-11-20 18:25:03,571 - INFO - Logs retrieved, search: '', level: '', limit: 15, offset: 0, returned: 2, total: 2
+2025-11-20 18:25:03,572 - INFO - 127.0.0.1 - - [20/Nov/2025 18:25:03] "GET /api/logs?limit=15&offset=0&search=&level= HTTP/1.1" 200 -
