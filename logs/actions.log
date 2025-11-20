@@ -1,13 +1,13 @@
-2025-11-16 10:43:24,315 - INFO - Logs cleared by admin
-2025-11-20 17:45:52,986 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:50:14,015 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:51:19,376 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:52:22,591 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:53:30,314 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:53:36,008 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:53:38,249 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:54:00,695 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:54:02,687 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:55:40,780 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:56:02,068 - INFO - Unauthorized access attempt to index page
-2025-11-20 17:56:04,526 - INFO - Unauthorized access attempt to index page
+2025-11-20 18:22:51,176 - INFO - Logs cleared by admin
+2025-11-20 18:23:23,303 - WARNING -  * Debugger is active!
+2025-11-20 18:23:23,321 - INFO -  * Debugger PIN: 135-648-618
+2025-11-20 18:23:42,959 - INFO - Listed 7 windows
+2025-11-20 18:23:42,969 - INFO - 127.0.0.1 - - [20/Nov/2025 18:23:42] "GET /api/windows HTTP/1.1" 200 -
+2025-11-20 18:23:57,835 - INFO - Listed 175 processes
+2025-11-20 18:23:57,836 - INFO - Listed 175 processes
+2025-11-20 18:23:57,839 - INFO - 127.0.0.1 - - [20/Nov/2025 18:23:57] "GET /api/processes HTTP/1.1" 200 -
+2025-11-20 18:24:01,768 - INFO - Logs retrieved, search: '', level: '', limit: 15, offset: 0, returned: 8, total: 8
+2025-11-20 18:24:01,769 - INFO - 127.0.0.1 - - [20/Nov/2025 18:24:01] "GET /api/logs?limit=15&offset=0&search=&level= HTTP/1.1" 200 -
+2025-11-20 18:24:24,955 - INFO - Listed 177 processes
+2025-11-20 18:24:24,957 - INFO - Listed 177 processes
+2025-11-20 18:24:24,959 - INFO - 127.0.0.1 - - [20/Nov/2025 18:24:24] "GET /api/processes HTTP/1.1" 200 -

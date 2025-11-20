@@ -14,61 +14,106 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         padding: 20px;
         box-sizing: border-box;
-        transition: all 0.3s ease;
+        animation: fadeIn 1s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .login-container {
         background: var(--card-bg);
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px var(--card-shadow);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 8px 40px var(--card-shadow);
         text-align: center;
         width: 100%;
-        max-width: 400px;
+        max-width: 450px;
         color: var(--text);
+        animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
 
     .login-container h2 {
         color: var(--text);
-        margin-bottom: 25px;
-        font-size: 2em;
+        margin: 0 0 30px 0;
+        font-size: 2.5em;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .login-container h2::before {
+        content: '🔒';
+        font-size: 1.2em;
     }
 
     .login-container input {
         width: 100%;
         padding: 15px;
-        margin: 10px 0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        margin: 20px 0;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 10px;
         text-align: center;
         font-size: 1em;
         box-sizing: border-box;
         background: var(--card-bg);
-        color: var(--text);
-        transition: border-color 0.3s ease;
+        color: white;
+        transition: all 0.5s ease;
+        outline: none;
+    }
+
+    .login-container input::placeholder {
+        color: rgba(255,255,255,0.5);
     }
 
     .login-container input:focus {
-        border-color: #555;
-        outline: none;
+        border-color: white;
+        box-shadow: 0 0 20px rgba(255,255,255,0.4);
     }
 
     .login-container button {
         width: 100%;
         padding: 15px;
-        margin-top: 10px;
+        margin-top: 20px;
         background: var(--nav-bg);
         color: var(--nav-text);
         border: none;
-        border-radius: 5px;
+        border-radius: 10px;
         cursor: pointer;
-        font-size: 1em;
-        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-size: 1.1em;
+        font-weight: bold;
+        transition: all 0.5s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
 
     .login-container button:hover {
-        background: #777;
-        transform: scale(1.05);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+    }
+
+    .login-container button:active {
+        transform: translateY(0);
+    }
+
+    .error {
+        color: red;
+        margin-bottom: 15px;
+        font-weight: bold;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
     }
 
     @media (max-width: 480px) {
@@ -76,14 +121,12 @@
             padding: 10px;
         }
         .login-container {
-            padding: 15px;
+            padding: 20px;
             max-width: 100%;
         }
         .login-container h2 {
-            font-size: 1.2em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 1.8em;
+            margin: 0 0 20px 0;
         }
         .login-container input, .login-container button {
             font-size: 0.9em;
@@ -97,7 +140,7 @@
     <div class="login-container">
         <h2>Вход в WebControl</h2>
         {% if error %}
-            <div style="color: red; margin-bottom: 10px;">{{ error }}</div>
+            <div class="error">{{ error }}</div>
         {% endif %}
         <form method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

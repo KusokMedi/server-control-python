@@ -4,6 +4,12 @@ import logging
 # Настройка логирования
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Добавляем handler для записи всех логов в файл
+root_logger = logging.getLogger()
+file_handler = logging.FileHandler('logs/actions.log')
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+root_logger.addHandler(file_handler)
+
 from flask import Flask, render_template, Blueprint, request, redirect, url_for, session, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
