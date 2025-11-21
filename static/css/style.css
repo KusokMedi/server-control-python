@@ -107,6 +107,7 @@ body {
 .nav-menu.open {
     max-height: 80vh;
     opacity: 1;
+    overflow-y: auto;
 }
 
 .nav-menu li {

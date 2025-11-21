@@ -13,13 +13,7 @@ root_logger.addHandler(file_handler)
 from flask import Flask, render_template, Blueprint, request, redirect, url_for, session, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
-from api.processes import processes_bp
-from api.monitoring import monitoring_bp
-from api.windows import windows_bp
-from api.input import input_bp
-from api.screenshots import screenshots_bp
-from api.clipboard import clipboard_bp
-from api.logs import logs_bp
+from api import processes_bp, monitoring_bp, windows_bp, input_bp, screenshots_bp, clipboard_bp, logs_bp, control_bp
 from utils.logger import log_action
 
 app = Flask(__name__)
@@ -53,6 +47,7 @@ app.register_blueprint(input_bp, url_prefix='/api')
 app.register_blueprint(screenshots_bp, url_prefix='/api')
 app.register_blueprint(clipboard_bp, url_prefix='/api')
 app.register_blueprint(logs_bp, url_prefix='/api')
+app.register_blueprint(control_bp, url_prefix='/api')
 
 @app.route('/')
 def index():
@@ -134,6 +129,14 @@ def logs():
         log_action("Unauthorized access attempt to logs page")
         return redirect(url_for('login'))
     log_action("User accessed logs page")
+    return render_template('index.html')
+
+@app.route('/control')
+def control():
+    if 'logged_in' not in session:
+        log_action("Unauthorized access attempt to control page")
+        return redirect(url_for('login'))
+    log_action("User accessed control page")
     return render_template('index.html')
 
 @app.errorhandler(404)

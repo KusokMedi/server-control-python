@@ -433,6 +433,8 @@ function loadModule(event, module) {
                 loadClipboard();
             } else if (module === 'logs') {
                 loadLogs();
+            } else if (module === 'control') {
+                loadControl();
             }
             content.classList.add('fade-in');
         }, 300);
@@ -1022,4 +1024,184 @@ function downloadLogs() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+}
+
+// Server-side screenshot-based implementation for screen control
+let controlInterval = null;
+let controlFps = 30;
+let controlShowCursor = true;
+let controlMonitorId = 1;
+let controlFrameCount = 0;
+let controlFpsDisplay = 0;
+let controlFpsUpdateTime = 0;
+
+function loadControl() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <h1 class="bounce-in">Управление</h1>
+        <div class="control-container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+            <div class="control-panel" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 800px;">
+                <div class="monitor-control" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="monitorSelect" style="font-weight: bold;">Монитор:</label>
+                    <select id="monitorSelect" onchange="changeMonitor()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="1">Монитор 1</option>
+                    </select>
+                </div>
+                <button id="startStopBtn" onclick="toggleStream()" class="bounce-in" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Начать</button>
+                <div class="fps-control" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="fpsSelect" style="font-weight: bold;">FPS:</label>
+                    <select id="fpsSelect" onchange="changeFps()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="15">15</option>
+                        <option value="30" selected>30</option>
+                        <option value="60">60</option>
+                        <option value="custom">Кастомный</option>
+                    </select>
+                    <input type="number" id="customFps" min="1" max="120" value="30" onchange="changeCustomFps()" style="width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #ccc; display: none;">
+                </div>
+                <div class="cursor-control" style="display: flex; align-items: center; gap: 10px;">
+                    <label for="showCursor" style="font-weight: bold;">Показывать курсор:</label>
+                    <input type="checkbox" id="showCursor" checked onchange="toggleCursor()">
+                </div>
+                <div class="fps-display" style="font-weight: bold;">Реальный FPS: <span id="realFps">0</span></div>
+            </div>
+            <div class="video-panel" style="position: relative; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; max-width: 70%; max-height: 70vh;">
+                <img id="controlImage" style="display: block; max-width: 100%; max-height: 100%;" alt="Screen stream">
+                <div id="fpsOverlay" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 4px; font-size: 14px;">FPS: 0</div>
+            </div>
+            <div id="errorMessage" style="display: none; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; max-width: 800px;"></div>
+        </div>
+    `;
+    content.classList.add('fade-in');
+
+    loadMonitors();
+}
+
+function loadMonitors() {
+    fetch('/api/control/monitors')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('monitorSelect');
+            select.innerHTML = '';
+            data.forEach(monitor => {
+                const option = document.createElement('option');
+                option.value = monitor.id;
+                option.textContent = monitor.name;
+                select.appendChild(option);
+            });
+            controlMonitorId = data[0]?.id || 1;
+        })
+        .catch(err => {
+            console.error('Error loading monitors:', err);
+            showControlError('Ошибка загрузки списка мониторов');
+        });
+}
+
+function changeMonitor() {
+    controlMonitorId = parseInt(document.getElementById('monitorSelect').value);
+}
+
+function toggleStream() {
+    if (controlInterval) {
+        stopStream();
+    } else {
+        startStream();
+    }
+}
+
+function startStream() {
+    controlFrameCount = 0;
+    controlFpsDisplay = 0;
+    controlFpsUpdateTime = performance.now();
+    controlInterval = setInterval(fetchFrame, 1000 / controlFps);
+    document.getElementById('startStopBtn').textContent = 'Остановить';
+    document.getElementById('startStopBtn').style.background = '#dc3545';
+}
+
+function stopStream() {
+    if (controlInterval) {
+        clearInterval(controlInterval);
+        controlInterval = null;
+    }
+    document.getElementById('startStopBtn').textContent = 'Начать';
+    document.getElementById('startStopBtn').style.background = '#28a745';
+    document.getElementById('realFps').textContent = '0';
+    document.getElementById('fpsOverlay').textContent = 'FPS: 0';
+}
+
+function fetchFrame() {
+    fetch('/api/control/stream', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({
+            monitor_id: controlMonitorId,
+            show_cursor: controlShowCursor
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showControlError(data.error);
+            stopStream();
+            return;
+        }
+        document.getElementById('controlImage').src = data.image;
+        controlFrameCount++;
+        const now = performance.now();
+        if (now - controlFpsUpdateTime >= 1000) {
+            controlFpsDisplay = Math.round(controlFrameCount / ((now - controlFpsUpdateTime) / 1000));
+            document.getElementById('realFps').textContent = controlFpsDisplay;
+            document.getElementById('fpsOverlay').textContent = 'FPS: ' + controlFpsDisplay;
+            controlFrameCount = 0;
+            controlFpsUpdateTime = now;
+        }
+        showControlError('');
+    })
+    .catch(err => {
+        console.error('Error fetching frame:', err);
+        showControlError('Ошибка получения кадра');
+        stopStream();
+    });
+}
+
+function changeFps() {
+    const select = document.getElementById('fpsSelect');
+    const customInput = document.getElementById('customFps');
+    if (select.value === 'custom') {
+        customInput.style.display = 'inline';
+        controlFps = parseInt(customInput.value) || 30;
+    } else {
+        customInput.style.display = 'none';
+        controlFps = parseInt(select.value);
+    }
+    if (controlInterval) {
+        stopStream();
+        startStream();
+    }
+}
+
+function changeCustomFps() {
+    const value = parseInt(document.getElementById('customFps').value);
+    if (value >= 1 && value <= 120) {
+        controlFps = value;
+        if (controlInterval) {
+            stopStream();
+            startStream();
+        }
+    } else {
+        document.getElementById('customFps').value = controlFps;
+    }
+}
+
+function toggleCursor() {
+    controlShowCursor = document.getElementById('showCursor').checked;
+}
+
+function showControlError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    if (message) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    } else {
+        errorDiv.style.display = 'none';
+    }
 }
