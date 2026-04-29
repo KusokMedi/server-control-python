@@ -6,3 +6,4 @@ from .monitoring import monitoring_bp
 from .processes import processes_bp
 from .screenshots import screenshots_bp
 from .windows import windows_bp
+from .users import users_bp

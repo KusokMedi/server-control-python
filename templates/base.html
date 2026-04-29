@@ -6,7 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{% block title %}WebControl{% endblock %}</title>
     <script>
-        if (localStorage.getItem('theme') === 'dark') {
+        // Set dark theme by default
+        if (!localStorage.getItem('theme')) {
+            localStorage.setItem('theme', 'dark');
+            document.body.classList.add('dark');
+        } else if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark');
         }
     </script>
@@ -27,7 +31,7 @@
                     <span class="hamburger-icon"></span>
                 </button>
                 <ul class="nav-menu" id="nav-menu" role="menubar">
-                    {% if session.get('logged_in') %}
+                    {% if session.get('user_id') %}
                         <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'processes')" id="nav-processes" tabindex="0" role="menuitem"><i class="fas fa-cogs"></i> Процессы</a></li>
                         <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'monitoring')" id="nav-monitoring" tabindex="0" role="menuitem"><i class="fas fa-chart-line"></i> Мониторинг</a></li>
                         <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'windows')" id="nav-windows" tabindex="0" role="menuitem"><i class="fas fa-window-maximize"></i> Окна</a></li>
@@ -36,6 +40,9 @@
                         <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'clipboard')" id="nav-clipboard" tabindex="0" role="menuitem"><i class="fas fa-clipboard"></i> Буфер обмена</a></li>
                         <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'logs')" id="nav-logs" tabindex="0" role="menuitem"><i class="fas fa-file-alt"></i> Логи</a></li>
                         <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'control')" id="nav-control" tabindex="0" role="menuitem"><i class="fas fa-desktop"></i> Управление</a></li>
+                        {% if user and user.role == 'admin' %}
+                        <li role="none"><a href="javascript:void(0)" onclick="loadModule(event, 'users')" id="nav-users" tabindex="0" role="menuitem"><i class="fas fa-users"></i> Пользователи</a></li>
+                        {% endif %}
                         <li role="none" class="menu-spacer"></li>
                         <li role="none" class="menu-bottom-row">
                             <button onclick="toggleTheme()" aria-label="Переключить тему" tabindex="0" role="menuitem"><i class="fas fa-moon"></i> Тема</button>

@@ -435,6 +435,8 @@ function loadModule(event, module) {
                 loadLogs();
             } else if (module === 'control') {
                 loadControl();
+            } else if (module === 'users') {
+                loadUsers();
             }
             content.classList.add('fade-in');
         }, 300);
@@ -1203,5 +1205,239 @@ function showControlError(message) {
         errorDiv.style.display = 'block';
     } else {
         errorDiv.style.display = 'none';
+    }
+}
+
+// Users Management
+let currentUsers = [];
+
+function loadUsers() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+        <h1 class="bounce-in">Управление пользователями</h1>
+        <div class="card zoom-in">
+            <button onclick="showCreateUserModal()" class="btn-primary">Создать пользователя</button>
+        </div>
+        <div class="card table-card zoom-in" id="usersList"></div>
+    `;
+    content.classList.add('fade-in');
+    fetchUsers();
+}
+
+function fetchUsers() {
+    fetch('/api/users')
+        .then(response => {
+            if (response.status === 403) {
+                alert('Доступ запрещен. Только администраторы могут управлять пользователями.');
+                return [];
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (Array.isArray(data)) {
+                currentUsers = data;
+                renderUsersList();
+            }
+        })
+        .catch(err => console.error('Error fetching users:', err));
+}
+
+function renderUsersList() {
+    const list = document.getElementById('usersList');
+    if (!currentUsers || currentUsers.length === 0) {
+        list.innerHTML = '<p>Нет пользователей</p>';
+        return;
+    }
+    
+    list.innerHTML = `
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Имя пользователя</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th>Создан</th>
+                <th>Последний вход</th>
+                <th>Действия</th>
+            </tr>
+            ${currentUsers.map((user, index) => `
+                <tr class="user-stagger" style="animation-delay: ${index * 0.05}s;">
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td><span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">${user.role}</span></td>
+                    <td><span class="badge ${user.is_active ? 'badge-active' : 'badge-inactive'}">${user.is_active ? 'Активен' : 'Неактивен'}</span></td>
+                    <td>${user.created_at ? new Date(user.created_at).toLocaleString('ru-RU') : 'N/A'}</td>
+                    <td>${user.last_login ? new Date(user.last_login).toLocaleString('ru-RU') : 'Никогда'}</td>
+                    <td>
+                        <button onclick="showEditUserModal(${user.id})" class="btn-small">Изменить</button>
+                        <button onclick="deleteUser(${user.id})" class="btn-small btn-danger">Удалить</button>
+                    </td>
+                </tr>
+            `).join('')}
+        </table>
+    `;
+}
+
+function showCreateUserModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Создать пользователя</h2>
+            <form id="createUserForm">
+                <input type="text" id="newUsername" placeholder="Имя пользователя" required minlength="3">
+                <input type="password" id="newPassword" placeholder="Пароль" required minlength="6">
+                <select id="newRole">
+                    <option value="user">Пользователь</option>
+                    <option value="admin">Администратор</option>
+                </select>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Создать</button>
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    document.getElementById('createUserForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        createUser();
+    });
+}
+
+function createUser() {
+    const username = document.getElementById('newUsername').value;
+    const password = document.getElementById('newPassword').value;
+    const role = document.getElementById('newRole').value;
+    const language = document.getElementById('newLanguage').value;
+    
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ username, password, role })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Ошибка: ' + data.error);
+        } else {
+            alert('Пользователь создан успешно');
+            closeModal();
+            fetchUsers();
+        }
+    })
+    .catch(err => {
+        console.error('Error creating user:', err);
+        alert('Ошибка при создании пользователя');
+    });
+}
+
+function showEditUserModal(userId) {
+    const user = currentUsers.find(u => u.id === userId);
+    if (!user) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h2>Изменить пользователя: ${user.username}</h2>
+            <form id="editUserForm">
+                <input type="password" id="editPassword" placeholder="Новый пароль (оставьте пустым, чтобы не менять)" minlength="6">
+                <select id="editRole">
+                    <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                </select>
+                <label>
+                    <input type="checkbox" id="editActive" ${user.is_active ? 'checked' : ''}>
+                    Активен
+                </label>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Отмена</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    document.getElementById('editUserForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        updateUser(userId);
+    });
+}
+
+function updateUser(userId) {
+    const password = document.getElementById('editPassword').value;
+    const role = document.getElementById('editRole').value;
+    const language = document.getElementById('editLanguage').value;
+    const is_active = document.getElementById('editActive').checked;
+    
+    const data = { role, language, is_active };
+    if (password) {
+        data.password = password;
+    }
+    
+    fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Ошибка: ' + data.error);
+        } else {
+            alert('Пользователь обновлен успешно');
+            closeModal();
+            fetchUsers();
+        }
+    })
+    .catch(err => {
+        console.error('Error updating user:', err);
+        alert('Ошибка при обновлении пользователя');
+    });
+}
+
+function deleteUser(userId) {
+    const user = currentUsers.find(u => u.id === userId);
+    if (!user) return;
+    
+    if (!confirm(`Вы уверены, что хотите удалить пользователя "${user.username}"?`)) {
+        return;
+    }
+    
+    fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Ошибка: ' + data.error);
+        } else {
+            alert('Пользователь удален успешно');
+            fetchUsers();
+        }
+    })
+    .catch(err => {
+        console.error('Error deleting user:', err);
+        alert('Ошибка при удалении пользователя');
+    });
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal');
+    if (modal) {
+        modal.remove();
     }
 }

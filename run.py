@@ -1,4 +1,4 @@
-from app import app
+from main import app
 import socket
 
 def get_local_ip():

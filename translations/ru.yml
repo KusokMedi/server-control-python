@@ -1,0 +1,112 @@
+app_name: "WebControl"
+login: "Вход"
+logout: "Выход"
+username: "Имя пользователя"
+password: "Пароль"
+login_button: "Войти"
+welcome: "Добро пожаловать в WebControl"
+error: "Ошибка"
+success: "Успешно"
+
+# Navigation
+nav_processes: "Процессы"
+nav_monitoring: "Мониторинг"
+nav_windows: "Окна"
+nav_input: "Клавиатура / Мышь"
+nav_screenshots: "Скриншот"
+nav_clipboard: "Буфер обмена"
+nav_logs: "Логи"
+nav_control: "Управление"
+nav_users: "Пользователи"
+nav_theme: "Тема"
+
+# Users
+users_title: "Управление пользователями"
+create_user: "Создать пользователя"
+edit_user: "Изменить пользователя"
+delete_user: "Удалить пользователя"
+user_created: "Пользователь создан успешно"
+user_updated: "Пользователь обновлен успешно"
+user_deleted: "Пользователь удален успешно"
+confirm_delete: "Вы уверены, что хотите удалить пользователя"
+role: "Роль"
+role_admin: "Администратор"
+role_user: "Пользователь"
+status: "Статус"
+active: "Активен"
+inactive: "Неактивен"
+created_at: "Создан"
+last_login: "Последний вход"
+actions: "Действия"
+save: "Сохранить"
+cancel: "Отмена"
+new_password: "Новый пароль"
+leave_empty: "оставьте пустым, чтобы не менять"
+language: "Язык"
+
+# Errors
+error_invalid_credentials: "Неверное имя пользователя или пароль"
+error_empty_credentials: "Введите имя пользователя и пароль"
+error_username_exists: "Пользователь уже существует"
+error_username_short: "Имя пользователя должно быть не менее 3 символов"
+error_password_short: "Пароль должен быть не менее 6 символов"
+error_access_denied: "Доступ запрещен"
+error_unauthorized: "Требуется авторизация"
+error_not_found: "Не найдено"
+error_internal: "Внутренняя ошибка сервера"
+
+# Processes
+processes_title: "Процессы"
+process_search: "Поиск по имени"
+process_sort: "Сортировка"
+process_kill: "Завершить"
+process_killed: "Процесс завершен"
+
+# Monitoring
+monitoring_title: "Мониторинг"
+cpu_usage: "Использование CPU"
+ram_usage: "Использование RAM"
+disk_usage: "Использование диска"
+network: "Сеть"
+local_ip: "Локальный IP"
+external_ip: "Внешний IP"
+
+# Windows
+windows_title: "Окна"
+window_hide: "Скрыть"
+window_show: "Показать"
+window_minimize: "Свернуть"
+window_maximize: "Развернуть"
+window_close: "Закрыть"
+window_focus: "Активировать"
+
+# Input
+input_title: "Клавиатура / Мышь"
+mouse_position: "Позиция мыши"
+mouse_move: "Переместить мышь"
+mouse_click: "Клик мыши"
+mouse_scroll: "Прокрутка"
+keyboard_type: "Ввод текста"
+keyboard_press: "Нажатие клавиши"
+
+# Screenshots
+screenshots_title: "Скриншоты"
+take_screenshot: "Сделать скриншот"
+screenshot_taken: "Скриншот сделан"
+
+# Clipboard
+clipboard_title: "Буфер обмена"
+clipboard_read: "Прочитать"
+clipboard_write: "Записать"
+clipboard_clear: "Очистить"
+
+# Logs
+logs_title: "Логи"
+logs_download: "Скачать логи"
+logs_clear: "Очистить логи"
+audit_logs: "Аудит действий"
+
+# Control
+control_title: "Управление"
+stream_start: "Начать стрим"
+stream_stop: "Остановить стрим"

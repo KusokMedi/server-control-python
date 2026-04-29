@@ -1,30 +1,50 @@
 import logging
 import os
+from logging.handlers import RotatingFileHandler
 
-LOG_FILE = 'logs/actions.log'
-os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+LOG_DIR = 'logs'
+os.makedirs(LOG_DIR, exist_ok=True)
 
-# Создаем отдельный logger для действий
-actions_logger = logging.getLogger('actions')
-actions_logger.setLevel(logging.DEBUG)
-
-# Создаем handler для файла
-file_handler = logging.FileHandler(LOG_FILE)
-file_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-# Создаем handler для консоли
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
-stream_handler.setFormatter(formatter)
-
-# Добавляем handlers к logger
-actions_logger.addHandler(file_handler)
-actions_logger.addHandler(stream_handler)
-
-# Отключаем передачу логов родительским логгерам, чтобы избежать дублирования
-actions_logger.propagate = False
-
-def log_action(action):
-    actions_logger.info(action)
+def setup_logging(app):
+    """Настроить логирование для приложения"""
+    
+    # Основной логгер приложения
+    app_handler = RotatingFileHandler(
+        os.path.join(LOG_DIR, 'app.log'),
+        maxBytes=10485760,  # 10MB
+        backupCount=10
+    )
+    app_handler.setLevel(logging.INFO)
+    app_handler.setFormatter(logging.Formatter(
+        '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+    ))
+    
+    # Логгер ошибок
+    error_handler = RotatingFileHandler(
+        os.path.join(LOG_DIR, 'error.log'),
+        maxBytes=10485760,
+        backupCount=10
+    )
+    error_handler.setLevel(logging.ERROR)
+    error_handler.setFormatter(logging.Formatter(
+        '%(asctime)s [%(levelname)s] %(name)s: %(message)s\n%(pathname)s:%(lineno)d\n'
+    ))
+    
+    # Консольный вывод
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter(
+        '%(asctime)s [%(levelname)s] %(message)s'
+    ))
+    
+    # Настройка root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(app_handler)
+    root_logger.addHandler(error_handler)
+    root_logger.addHandler(console_handler)
+    
+    # Настройка Flask logger
+    app.logger.addHandler(app_handler)
+    app.logger.addHandler(error_handler)
+    app.logger.addHandler(console_handler)

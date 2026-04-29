@@ -1,0 +1,112 @@
+app_name: "WebControl"
+login: "Login"
+logout: "Logout"
+username: "Username"
+password: "Password"
+login_button: "Sign In"
+welcome: "Welcome to WebControl"
+error: "Error"
+success: "Success"
+
+# Navigation
+nav_processes: "Processes"
+nav_monitoring: "Monitoring"
+nav_windows: "Windows"
+nav_input: "Keyboard / Mouse"
+nav_screenshots: "Screenshot"
+nav_clipboard: "Clipboard"
+nav_logs: "Logs"
+nav_control: "Control"
+nav_users: "Users"
+nav_theme: "Theme"
+
+# Users
+users_title: "User Management"
+create_user: "Create User"
+edit_user: "Edit User"
+delete_user: "Delete User"
+user_created: "User created successfully"
+user_updated: "User updated successfully"
+user_deleted: "User deleted successfully"
+confirm_delete: "Are you sure you want to delete user"
+role: "Role"
+role_admin: "Administrator"
+role_user: "User"
+status: "Status"
+active: "Active"
+inactive: "Inactive"
+created_at: "Created"
+last_login: "Last Login"
+actions: "Actions"
+save: "Save"
+cancel: "Cancel"
+new_password: "New Password"
+leave_empty: "leave empty to keep unchanged"
+language: "Language"
+
+# Errors
+error_invalid_credentials: "Invalid username or password"
+error_empty_credentials: "Please enter username and password"
+error_username_exists: "User already exists"
+error_username_short: "Username must be at least 3 characters"
+error_password_short: "Password must be at least 6 characters"
+error_access_denied: "Access denied"
+error_unauthorized: "Authorization required"
+error_not_found: "Not found"
+error_internal: "Internal server error"
+
+# Processes
+processes_title: "Processes"
+process_search: "Search by name"
+process_sort: "Sort"
+process_kill: "Kill"
+process_killed: "Process killed"
+
+# Monitoring
+monitoring_title: "Monitoring"
+cpu_usage: "CPU Usage"
+ram_usage: "RAM Usage"
+disk_usage: "Disk Usage"
+network: "Network"
+local_ip: "Local IP"
+external_ip: "External IP"
+
+# Windows
+windows_title: "Windows"
+window_hide: "Hide"
+window_show: "Show"
+window_minimize: "Minimize"
+window_maximize: "Maximize"
+window_close: "Close"
+window_focus: "Focus"
+
+# Input
+input_title: "Keyboard / Mouse"
+mouse_position: "Mouse Position"
+mouse_move: "Move Mouse"
+mouse_click: "Mouse Click"
+mouse_scroll: "Scroll"
+keyboard_type: "Type Text"
+keyboard_press: "Press Key"
+
+# Screenshots
+screenshots_title: "Screenshots"
+take_screenshot: "Take Screenshot"
+screenshot_taken: "Screenshot taken"
+
+# Clipboard
+clipboard_title: "Clipboard"
+clipboard_read: "Read"
+clipboard_write: "Write"
+clipboard_clear: "Clear"
+
+# Logs
+logs_title: "Logs"
+logs_download: "Download Logs"
+logs_clear: "Clear Logs"
+audit_logs: "Audit Logs"
+
+# Control
+control_title: "Control"
+stream_start: "Start Stream"
+stream_stop: "Stop Stream"

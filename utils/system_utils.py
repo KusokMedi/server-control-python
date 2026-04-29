@@ -1,17 +1,21 @@
 import psutil
-import win32api
-import win32con
-import win32gui
-import win32process
-import win32clipboard
 import pyautogui
 import os
 import subprocess
-import threading
-import time
-from PIL import ImageGrab
-import requests
-from utils.logger import log_action
+import shutil
+import logging
+import platform
+
+logger = logging.getLogger(__name__)
+
+IS_WINDOWS = platform.system() == 'Windows'
+IS_LINUX = platform.system() == 'Linux'
+
+if IS_WINDOWS:
+    import win32api
+    import win32con
+    import win32gui
+    import win32clipboard
 
 # File operations
 def list_dir(path):
@@ -30,62 +34,78 @@ def list_dir(path):
                     'size': size,
                     'path': full_path
                 })
-            except (OSError, PermissionError):
-                continue  # Skip inaccessible items
+            except (OSError, PermissionError) as e:
+                logger.warning(f"Cannot access {item}: {e}")
+                continue
         return sorted(items, key=lambda x: (not x['is_dir'], x['name'].lower()))
-    except (OSError, PermissionError):
+    except (OSError, PermissionError) as e:
+        logger.error(f"Cannot list directory {path}: {e}")
         return []
 
 def create_folder(path, name):
     try:
-        os.makedirs(os.path.join(path, name))
-        log_action('Create folder', f'{os.path.join(path, name)}')
+        new_path = os.path.join(path, name)
+        os.makedirs(new_path)
+        logger.info(f'Created folder: {new_path}')
         return True
-    except:
+    except Exception as e:
+        logger.error(f"Failed to create folder {name} in {path}: {e}")
         return False
 
 def delete_item(path):
     try:
         if os.path.isdir(path):
-            os.rmdir(path)
+            shutil.rmtree(path)
         else:
             os.remove(path)
-        log_action('Delete item', path)
+        logger.info(f'Deleted item: {path}')
         return True
-    except:
+    except Exception as e:
+        logger.error(f"Failed to delete {path}: {e}")
         return False
 
 def rename_item(old_path, new_name):
     try:
         new_path = os.path.join(os.path.dirname(old_path), new_name)
         os.rename(old_path, new_path)
-        log_action('Rename item', f'{old_path} -> {new_path}')
+        logger.info(f'Renamed: {old_path} -> {new_path}')
         return True
-    except:
+    except Exception as e:
+        logger.error(f"Failed to rename {old_path}: {e}")
         return False
 
 def read_file(path):
     try:
         with open(path, 'r', encoding='utf-8') as f:
             return f.read()
-    except:
+    except UnicodeDecodeError:
+        try:
+            with open(path, 'r', encoding='latin-1') as f:
+                return f.read()
+        except Exception as e:
+            logger.error(f"Failed to read file {path}: {e}")
+            return ''
+    except Exception as e:
+        logger.error(f"Failed to read file {path}: {e}")
         return ''
 
 def write_file(path, content):
     try:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
-        log_action('Edit file', path)
+        logger.info(f'Wrote to file: {path}')
         return True
-    except:
+    except Exception as e:
+        logger.error(f"Failed to write file {path}: {e}")
         return False
 
 def run_file(path):
     try:
-        process = subprocess.Popen([path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        log_action('Run file', path)
+        process = subprocess.Popen([path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        logger.info(f'Started process: {path} (PID: {process.pid})')
         return process.pid
-    except:
+    except Exception as e:
+        logger.error(f"Failed to run file {path}: {e}")
         return None
 
 # Processes
@@ -101,21 +121,26 @@ def get_processes():
                 'memory': proc.info['memory_percent'],
                 'threads': proc.info['num_threads']
             })
-        except:
-            pass
+        except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+            continue
     return processes
 
 def kill_process(pid):
     try:
-        psutil.Process(pid).terminate()
-        log_action('Kill process', f'PID: {pid}')
+        proc = psutil.Process(pid)
+        proc.terminate()
+        logger.info(f'Terminated process PID: {pid}')
         return True
-    except:
+    except psutil.NoSuchProcess:
+        logger.warning(f"Process {pid} not found")
+        return False
+    except Exception as e:
+        logger.error(f"Failed to kill process {pid}: {e}")
         return False
 
 # Monitoring
 def get_system_info():
-    cpu = psutil.cpu_percent(interval=1)
+    cpu = psutil.cpu_percent(interval=0.1)
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage('/')
     net = psutil.net_io_counters()
@@ -127,163 +152,186 @@ def get_system_info():
         'net_recv': net.bytes_recv
     }
 
-def get_ips():
-    try:
-        internal = psutil.net_if_addrs()['Ethernet'][0].address if 'Ethernet' in psutil.net_if_addrs() else 'N/A'
-        external = requests.get('https://api.ipify.org').text
-    except:
-        internal = 'N/A'
-        external = 'N/A'
-    return {'internal': internal, 'external': external}
-
-# Windows
+# Windows management (Windows only)
 def get_windows():
+    if not IS_WINDOWS:
+        logger.warning("Window management is only available on Windows")
+        return []
+    
     windows = []
     def callback(hwnd, windows):
         if win32gui.IsWindowVisible(hwnd):
             title = win32gui.GetWindowText(hwnd)
             if title:
-                rect = win32gui.GetWindowRect(hwnd)
-                windows.append({
-                    'hwnd': hwnd,
-                    'title': title,
-                    'x': rect[0],
-                    'y': rect[1],
-                    'w': rect[2] - rect[0],
-                    'h': rect[3] - rect[1]
-                })
+                try:
+                    rect = win32gui.GetWindowRect(hwnd)
+                    windows.append({
+                        'hwnd': hwnd,
+                        'title': title,
+                        'x': rect[0],
+                        'y': rect[1],
+                        'w': rect[2] - rect[0],
+                        'h': rect[3] - rect[1]
+                    })
+                except Exception as e:
+                    logger.warning(f"Cannot get window rect for {hwnd}: {e}")
     win32gui.EnumWindows(callback, windows)
     return windows
 
 def hide_window(hwnd):
-    win32gui.ShowWindow(hwnd, win32con.SW_HIDE)
-    log_action('Hide window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.ShowWindow(hwnd, win32con.SW_HIDE)
+        logger.info(f'Hidden window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to hide window {hwnd}: {e}")
+        raise
 
 def show_window(hwnd):
-    win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
-    log_action('Show window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
+        logger.info(f'Shown window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to show window {hwnd}: {e}")
+        raise
 
 def close_window(hwnd):
-    win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
-    log_action('Close window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+        logger.info(f'Closed window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to close window {hwnd}: {e}")
+        raise
 
 def minimize_window(hwnd):
-    win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
-    log_action('Minimize window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
+        logger.info(f'Minimized window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to minimize window {hwnd}: {e}")
+        raise
 
 def maximize_window(hwnd):
-    win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
-    log_action('Maximize window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+        logger.info(f'Maximized window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to maximize window {hwnd}: {e}")
+        raise
 
 def restore_window(hwnd):
-    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-    log_action('Restore window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+        logger.info(f'Restored window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to restore window {hwnd}: {e}")
+        raise
 
 def move_window(hwnd, x, y):
-    win32gui.SetWindowPos(hwnd, None, x, y, 0, 0, win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
-    log_action('Move window', f'HWND: {hwnd} to ({x}, {y})')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.SetWindowPos(hwnd, None, x, y, 0, 0, win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
+        logger.info(f'Moved window HWND: {hwnd} to ({x}, {y})')
+    except Exception as e:
+        logger.error(f"Failed to move window {hwnd}: {e}")
+        raise
 
 def resize_window(hwnd, w, h):
-    win32gui.SetWindowPos(hwnd, None, 0, 0, w, h, win32con.SWP_NOMOVE | win32con.SWP_NOZORDER)
-    log_action('Resize window', f'HWND: {hwnd} to {w}x{h}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.SetWindowPos(hwnd, None, 0, 0, w, h, win32con.SWP_NOMOVE | win32con.SWP_NOZORDER)
+        logger.info(f'Resized window HWND: {hwnd} to {w}x{h}')
+    except Exception as e:
+        logger.error(f"Failed to resize window {hwnd}: {e}")
+        raise
 
 def activate_window(hwnd):
-    win32gui.SetForegroundWindow(hwnd)
-    log_action('Activate window', f'HWND: {hwnd}')
+    if not IS_WINDOWS:
+        raise NotImplementedError("Window management is only available on Windows")
+    try:
+        win32gui.SetForegroundWindow(hwnd)
+        logger.info(f'Activated window HWND: {hwnd}')
+    except Exception as e:
+        logger.error(f"Failed to activate window {hwnd}: {e}")
+        raise
 
-# Input
+# Input (cross-platform via pyautogui)
 def move_mouse(x, y):
-    pyautogui.moveTo(x, y)
-    log_action('Move mouse', f'to ({x}, {y})')
+    try:
+        pyautogui.moveTo(x, y)
+        logger.debug(f'Moved mouse to ({x}, {y})')
+    except Exception as e:
+        logger.error(f"Failed to move mouse: {e}")
+        raise
 
 def click_mouse(button='left', clicks=1):
-    pyautogui.click(button=button, clicks=clicks)
-    log_action('Click mouse', f'{button} {clicks} times')
+    try:
+        pyautogui.click(button=button, clicks=clicks)
+        logger.debug(f'Clicked mouse: {button} {clicks} times')
+    except Exception as e:
+        logger.error(f"Failed to click mouse: {e}")
+        raise
 
-def scroll_mouse(x, y, clicks):
-    pyautogui.scroll(clicks, x, y)
-    log_action('Scroll mouse', f'at ({x}, {y}) {clicks}')
+def scroll_mouse(clicks):
+    try:
+        pyautogui.scroll(clicks)
+        logger.debug(f'Scrolled mouse: {clicks}')
+    except Exception as e:
+        logger.error(f"Failed to scroll mouse: {e}")
+        raise
 
 def press_key(key):
-    pyautogui.press(key)
-    log_action('Press key', key)
+    try:
+        pyautogui.press(key)
+        logger.debug(f'Pressed key: {key}')
+    except Exception as e:
+        logger.error(f"Failed to press key: {e}")
+        raise
 
 def type_text(text):
-    pyautogui.typewrite(text)
-    log_action('Type text', text)
-
-# Screenshots
-def take_screenshot():
-    img = ImageGrab.grab()
-    path = f'static/screenshots/screenshot_{int(time.time())}.png'
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path)
-    log_action('Screenshot', 'full screen')
-    return path
-
-def take_monitor_screenshot(monitor):
     try:
-        import screeninfo
-        monitors = screeninfo.get_monitors()
-        if monitor < len(monitors):
-            m = monitors[monitor]
-            img = ImageGrab.grab(bbox=(m.x, m.y, m.x + m.width, m.y + m.height))
-            path = f'static/screenshots/monitor_{monitor}_{int(time.time())}.png'
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            img.save(path)
-            log_action('Screenshot', f'monitor {monitor}')
-            return path
-    except ImportError:
-        # Fallback to full screen if screeninfo not available
-        return take_screenshot()
-    return None
+        pyautogui.write(text, interval=0.01)
+        logger.debug(f'Typed text (length: {len(text)})')
+    except Exception as e:
+        logger.error(f"Failed to type text: {e}")
+        raise
 
-# Clipboard
+# Clipboard (cross-platform via pyperclip)
 def get_clipboard():
-    win32clipboard.OpenClipboard()
     try:
-        data = win32clipboard.GetClipboardData(win32con.CF_TEXT).decode('utf-8')
-    except:
-        data = ''
-    win32clipboard.CloseClipboard()
-    return data
+        import pyperclip
+        return pyperclip.paste()
+    except Exception as e:
+        logger.error(f"Failed to get clipboard: {e}")
+        return ''
 
 def set_clipboard(text):
-    win32clipboard.OpenClipboard()
-    win32clipboard.EmptyClipboard()
-    win32clipboard.SetClipboardData(win32con.CF_TEXT, text.encode('utf-8'))
-    win32clipboard.CloseClipboard()
-    log_action('Set clipboard', text)
+    try:
+        import pyperclip
+        pyperclip.copy(text)
+        logger.debug('Set clipboard')
+    except Exception as e:
+        logger.error(f"Failed to set clipboard: {e}")
+        raise
 
 def clear_clipboard():
-    win32clipboard.OpenClipboard()
-    win32clipboard.EmptyClipboard()
-    win32clipboard.CloseClipboard()
-    log_action('Clear clipboard')
-
-# Virtual consoles
-running_processes = {}
-
-def start_process_console(path):
-    pid = run_file(path)
-    if pid:
-        running_processes[pid] = {'process': psutil.Process(pid), 'output': []}
-    return pid
-
-def get_process_output(pid):
-    if pid in running_processes:
-        proc = running_processes[pid]['process']
-        try:
-            output = proc.stdout.read()
-            if output:
-                running_processes[pid]['output'].append(output)
-        except:
-            pass
-        return '\n'.join(running_processes[pid]['output'])
-    return ''
-
-def stop_process_console(pid):
-    if pid in running_processes:
-        running_processes[pid]['process'].terminate()
-        del running_processes[pid]
-        log_action('Stop console', f'PID: {pid}')
+    try:
+        import pyperclip
+        pyperclip.copy('')
+        logger.debug('Cleared clipboard')
+    except Exception as e:
+        logger.error(f"Failed to clear clipboard: {e}")
+        raise

@@ -1,70 +1,61 @@
 from flask import Blueprint, request, jsonify
 import psutil
 import logging
-from utils.logger import log_action
+from utils.auth import require_auth, log_audit
+from utils.api_utils import handle_errors
 
 logger = logging.getLogger(__name__)
 processes_bp = Blueprint('processes', __name__)
 
 @processes_bp.route('/processes', methods=['GET'])
+@require_auth
+@handle_errors
 def list_processes():
-    try:
-        processes = []
-        for proc in psutil.process_iter(['pid', 'name', 'exe', 'cpu_percent', 'memory_percent']):
-            try:
-                processes.append({
-                    'pid': proc.info['pid'],
-                    'name': proc.info['name'],
-                    'exe': proc.info['exe'],
-                    'cpu': round(proc.info['cpu_percent'], 2),
-                    'memory': round(proc.info['memory_percent'], 2)
-                })
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                continue
-        logger.info(f"Listed {len(processes)} processes")
-        log_action(f"Listed {len(processes)} processes")
-        return jsonify(processes)
-    except Exception as e:
-        logger.error(f"Error listing processes: {e}")
-        return jsonify({'error': 'Failed to list processes'}), 500
+    processes = []
+    for proc in psutil.process_iter(['pid', 'name', 'exe', 'cpu_percent', 'memory_percent']):
+        try:
+            processes.append({
+                'pid': proc.info['pid'],
+                'name': proc.info['name'],
+                'exe': proc.info['exe'],
+                'cpu': round(proc.info['cpu_percent'], 2),
+                'memory': round(proc.info['memory_percent'], 2)
+            })
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    logger.info(f"Listed {len(processes)} processes")
+    return jsonify(processes)
 
 @processes_bp.route('/processes/kill', methods=['POST'])
+@require_auth
+@handle_errors
 def kill_process():
-    try:
-        data = request.get_json()
-        if not data or 'pid' not in data:
-            return jsonify({'error': 'Missing pid'}), 400
-        pid = int(data['pid'])
-        proc = psutil.Process(pid)
-        proc.kill()
-        logger.info(f"Process {pid} killed")
-        log_action(f"Process {pid} ({proc.name()}) killed")
-        return jsonify({'success': True})
-    except ValueError:
-        return jsonify({'error': 'Invalid pid'}), 400
-    except psutil.NoSuchProcess:
-        return jsonify({'error': 'Process not found'}), 404
-    except Exception as e:
-        logger.error(f"Error killing process {pid}: {e}")
-        return jsonify({'error': 'Failed to kill process'}), 500
+    data = request.get_json()
+    if not data or 'pid' not in data:
+        raise ValueError('Missing pid')
+    
+    pid = int(data['pid'])
+    proc = psutil.Process(pid)
+    proc_name = proc.name()
+    proc.kill()
+    
+    logger.info(f"Process {pid} killed")
+    log_audit('process_killed', f'PID: {pid}, Name: {proc_name}')
+    return jsonify({'success': True})
 
 @processes_bp.route('/processes/priority', methods=['POST'])
+@require_auth
+@handle_errors
 def set_priority():
-    try:
-        data = request.get_json()
-        if not data or 'pid' not in data or 'priority' not in data:
-            return jsonify({'error': 'Missing pid or priority'}), 400
-        pid = int(data['pid'])
-        priority = int(data['priority'])
-        proc = psutil.Process(pid)
-        proc.nice(priority)
-        logger.info(f"Process {pid} priority set to {priority}")
-        log_action(f"Process {pid} ({proc.name()}) priority set to {priority}")
-        return jsonify({'success': True})
-    except ValueError:
-        return jsonify({'error': 'Invalid pid or priority'}), 400
-    except psutil.NoSuchProcess:
-        return jsonify({'error': 'Process not found'}), 404
-    except Exception as e:
-        logger.error(f"Error setting priority for process {pid}: {e}")
-        return jsonify({'error': 'Failed to set priority'}), 500
+    data = request.get_json()
+    if not data or 'pid' not in data or 'priority' not in data:
+        raise ValueError('Missing pid or priority')
+    
+    pid = int(data['pid'])
+    priority = int(data['priority'])
+    proc = psutil.Process(pid)
+    proc.nice(priority)
+    
+    logger.info(f"Process {pid} priority set to {priority}")
+    log_audit('process_priority_changed', f'PID: {pid}, Name: {proc.name()}, Priority: {priority}')
+    return jsonify({'success': True})
