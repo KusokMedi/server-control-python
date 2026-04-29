@@ -136,8 +136,23 @@
     </div>
 
     <script>
-        document.getElementById('setupForm').addEventListener('submit', function() {
+        document.getElementById('setupForm').addEventListener('submit', function(e) {
             const btn = document.getElementById('submitBtn');
+            const form = e.target;
+            
+            // Проверка валидности формы
+            if (!form.checkValidity()) {
+                return;
+            }
+            
+            // Проверка совпадения паролей
+            const password = form.querySelector('[name="password"]').value;
+            const passwordConfirm = form.querySelector('[name="password_confirm"]').value;
+            
+            if (password !== passwordConfirm) {
+                return;
+            }
+            
             btn.disabled = true;
             btn.textContent = 'Creating...';
         });
