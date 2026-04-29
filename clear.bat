@@ -1,4 +1,5 @@
 @echo off
+title WebControl - Clear Data
 echo Clearing WebControl user data...
 
 REM Remove database

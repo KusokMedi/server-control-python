@@ -1,4 +1,5 @@
 @echo off
+title WebControl - Starting...
 echo ========================================
 echo        WebControl Server Starter
 echo ========================================

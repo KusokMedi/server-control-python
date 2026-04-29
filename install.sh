@@ -1,4 +1,5 @@
 #!/bin/bash
+echo -e "\033]0;WebControl - Installation\007"
 
 echo "Installing WebControl dependencies..."
 

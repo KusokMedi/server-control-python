@@ -1,4 +1,5 @@
 #!/bin/bash
+echo -e "\033]0;WebControl - Clear Data\007"
 
 echo "Clearing WebControl user data..."
 

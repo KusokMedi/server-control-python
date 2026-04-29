@@ -4,7 +4,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from utils.config import Config
+from config import Config
 from utils.models import db, User
 from utils.auth import login_user, logout_user, get_current_user, require_auth, log_audit
 from utils.logger import setup_logging
@@ -148,7 +148,6 @@ def ratelimit_handler(e):
 
 if __name__ == '__main__':
     app.run(host=Config.HOST, port=Config.PORT, debug=Config.DEBUG)
-())
 
 @app.route('/monitoring')
 @require_auth

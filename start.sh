@@ -1,4 +1,5 @@
 #!/bin/bash
+echo -e "\033]0;WebControl - Starting...\007"
 
 echo "Starting WebControl..."
 
