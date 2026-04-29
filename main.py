@@ -61,6 +61,10 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def login():
+    # Проверка наличия пользователей
+    if User.query.count() == 0:
+        return redirect(url_for('setup'))
+    
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -79,6 +83,43 @@ def login():
         return render_template('login.html', error='Неверное имя пользователя или пароль')
     
     return render_template('login.html')
+
+@app.route('/setup', methods=['GET', 'POST'])
+def setup():
+    # Если уже есть пользователи, редирект на логин
+    if User.query.count() > 0:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        password_confirm = request.form.get('password_confirm', '')
+        language = request.form.get('language', 'ru')
+        
+        if not username or not password:
+            return render_template('setup.html', error='Username and password are required')
+        
+        if len(username) < 3:
+            return render_template('setup.html', error='Username must be at least 3 characters')
+        
+        if len(password) < 6:
+            return render_template('setup.html', error='Password must be at least 6 characters')
+        
+        if password != password_confirm:
+            return render_template('setup.html', error='Passwords do not match')
+        
+        # Создание первого администратора
+        admin = User(username=username, role='admin', language=language)
+        admin.set_password(password)
+        db.session.add(admin)
+        db.session.commit()
+        
+        log_audit('user_created', f'First admin user created: {username}', user_id=admin.id)
+        app.logger.info(f"First admin user created: {username}")
+        
+        return redirect(url_for('login'))
+    
+    return render_template('setup.html')
 
 @app.route('/logout')
 def logout():
