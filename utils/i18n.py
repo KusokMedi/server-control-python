@@ -17,7 +17,7 @@ def load_translations():
 
 def get_language():
     """Получить текущий язык пользователя"""
-    from auth import get_current_user
+    from utils.auth import get_current_user
     user = get_current_user()
     if user:
         return user.language
