@@ -1040,7 +1040,7 @@ let controlFpsUpdateTime = 0;
 function loadControl() {
     const content = document.getElementById('content');
     content.innerHTML = `
-        <h1 class="bounce-in">Управление</h1>
+        <h1 class="bounce-in">Стриминг экрана</h1>
         <div class="control-container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
             <div class="control-panel" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; background: var(--card-bg); border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 800px;">
                 <div class="monitor-control" style="display: flex; align-items: center; gap: 10px;">
@@ -1049,7 +1049,7 @@ function loadControl() {
                         <option value="1">Монитор 1</option>
                     </select>
                 </div>
-                <button id="startStopBtn" onclick="toggleStream()" class="bounce-in" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Начать</button>
+                <button id="startStopBtn" onclick="toggleStream()" class="bounce-in" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Начать трансляцию</button>
                 <div class="fps-control" style="display: flex; align-items: center; gap: 10px;">
                     <label for="fpsSelect" style="font-weight: bold;">FPS:</label>
                     <select id="fpsSelect" onchange="changeFps()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
@@ -1066,8 +1066,8 @@ function loadControl() {
                 </div>
                 <div class="fps-display" style="font-weight: bold;">Реальный FPS: <span id="realFps">0</span></div>
             </div>
-            <div class="video-panel" style="position: relative; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; max-width: 70%; max-height: 70vh;">
-                <img id="controlImage" style="display: block; max-width: 100%; max-height: 100%;" alt="Screen stream">
+            <div class="video-panel" style="position: relative; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; max-width: 90%; max-height: 70vh;">
+                <img id="controlImage" style="display: block; width: 100%; height: auto;" alt="Трансляция экрана">
                 <div id="fpsOverlay" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 4px; font-size: 14px;">FPS: 0</div>
             </div>
             <div id="errorMessage" style="display: none; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; max-width: 800px;"></div>
@@ -1115,7 +1115,7 @@ function startStream() {
     controlFpsDisplay = 0;
     controlFpsUpdateTime = performance.now();
     controlInterval = setInterval(fetchFrame, 1000 / controlFps);
-    document.getElementById('startStopBtn').textContent = 'Остановить';
+    document.getElementById('startStopBtn').textContent = 'Остановить трансляцию';
     document.getElementById('startStopBtn').style.background = '#dc3545';
 }
 
@@ -1124,7 +1124,7 @@ function stopStream() {
         clearInterval(controlInterval);
         controlInterval = null;
     }
-    document.getElementById('startStopBtn').textContent = 'Начать';
+    document.getElementById('startStopBtn').textContent = 'Начать трансляцию';
     document.getElementById('startStopBtn').style.background = '#28a745';
     document.getElementById('realFps').textContent = '0';
     document.getElementById('fpsOverlay').textContent = 'FPS: 0';
