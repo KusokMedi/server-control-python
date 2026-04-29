@@ -79,6 +79,11 @@
         margin-bottom: 15px;
         font-size: 0.9em;
     }
+
+    .login-container button:disabled {
+        background: #6c7a89;
+        cursor: not-allowed;
+    }
 </style>
 {% endblock %}
 
@@ -90,11 +95,19 @@
             <div class="error">{{ error }}</div>
         {% endif %}
         
-        <form method="post">
+        <form method="post" id="loginForm">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="text" name="username" placeholder="Username" required autocomplete="username" autofocus>
             <input type="password" name="password" placeholder="Password" required autocomplete="current-password">
-            <button type="submit">Sign In</button>
+            <button type="submit" id="submitBtn">Sign In</button>
         </form>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+        });
+    </script>
 {% endblock %}

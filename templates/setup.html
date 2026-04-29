@@ -101,6 +101,11 @@
         margin-bottom: 20px;
         font-size: 0.9em;
     }
+
+    .login-container button:disabled {
+        background: #6c7a89;
+        cursor: not-allowed;
+    }
 </style>
 {% endblock %}
 
@@ -117,7 +122,7 @@
             <div class="error">{{ error }}</div>
         {% endif %}
         
-        <form method="post">
+        <form method="post" id="setupForm">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="text" name="username" placeholder="Username (min 3 characters)" required minlength="3" autocomplete="username" autofocus>
             <input type="password" name="password" placeholder="Password (min 6 characters)" required minlength="6" autocomplete="new-password">
@@ -126,7 +131,15 @@
                 <option value="ru">Русский</option>
                 <option value="en">English</option>
             </select>
-            <button type="submit">Create Administrator</button>
+            <button type="submit" id="submitBtn">Create Administrator</button>
         </form>
     </div>
+
+    <script>
+        document.getElementById('setupForm').addEventListener('submit', function() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+        });
+    </script>
 {% endblock %}

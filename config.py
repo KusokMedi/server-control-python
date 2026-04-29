@@ -1,9 +1,14 @@
 import secrets
+import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Загрузка переменных окружения из .env файла
+load_dotenv()
 
 class Config:
-    SECRET_KEY = secrets.token_hex(32)
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///webcontrol.db'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///webcontrol.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     SESSION_COOKIE_SECURE = False

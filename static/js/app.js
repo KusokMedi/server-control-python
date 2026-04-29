@@ -1,5 +1,31 @@
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+// Безопасный fetch с обработкой ошибок и таймаутом
+function safeFetch(url, options = {}, timeout = 30000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    return fetch(url, { ...options, signal: controller.signal })
+        .then(response => {
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                console.error('Request timeout:', url);
+                alert('Запрос превысил время ожидания. Попробуйте еще раз.');
+            } else {
+                console.error('Fetch error:', error);
+                alert('Ошибка соединения. Проверьте подключение к серверу.');
+            }
+            throw error;
+        });
+}
+
 let currentProcesses = [];
 
 function loadProcesses() {
@@ -17,14 +43,16 @@ function loadProcesses() {
                 </select>
             </div>
         </div>
-        <div class="card table-card zoom-in" id="processList"></div>
+        <div class="card table-card zoom-in" id="processList">Загрузка...</div>
     `;
     content.classList.add('fade-in');
-    fetch('/api/processes')
-        .then(response => response.json())
+    safeFetch('/api/processes')
         .then(data => {
             currentProcesses = data;
             renderProcessList();
+        })
+        .catch(() => {
+            document.getElementById('processList').innerHTML = '<p style="color: red;">Ошибка загрузки процессов</p>';
         });
 }
 
@@ -61,11 +89,13 @@ function renderProcessList(items = currentProcesses) {
 }
 
 function killProcess(pid) {
-    fetch('/api/processes/kill', {
+    safeFetch('/api/processes/kill', {
         method: 'POST',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
         body: JSON.stringify({pid})
-    }).then(() => loadProcesses());
+    })
+    .then(() => loadProcesses())
+    .catch(() => {}); // Ошибка уже обработана в safeFetch
 }
 
 let cpuChart, ramChart, diskChart, netChart;
