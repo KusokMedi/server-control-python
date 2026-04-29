@@ -4,6 +4,10 @@
 
 {% block head %}
 <style>
+    header {
+        display: none !important;
+    }
+    
     body {
         margin: 0;
         height: 100vh;
@@ -157,4 +161,8 @@
             btn.textContent = 'Creating...';
         });
     </script>
+{% endblock %}
+
+{% block scripts %}
+    <!-- Отключаем app.js для страницы setup -->
 {% endblock %}
